@@ -1,14 +1,11 @@
 //! This module implements Plonk constraint gate primitive.
 
 use crate::circuits::{constraints::ConstraintSystem, domains::EvaluationDomains, wires::*};
-use ark_ff::bytes::ToBytes;
 use ark_ff::{FftField, Field};
 use ark_poly::{Evaluations as E, Radix2EvaluationDomain as D};
-use num_traits::cast::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::collections::{HashMap, HashSet};
-use std::io::{Result as IoResult, Write};
 
 /// A row accessible from a given row, corresponds to the fact that we open all polynomials
 /// at `zeta` **and** `omega * zeta`.
@@ -108,20 +105,7 @@ impl<F: Field> JointLookup<F> {
 /// If we were ever to support this feature, we would have to make sure
 /// not to re-use powers of alpha across constraints.
 #[repr(C)]
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    PartialEq,
-    FromPrimitive,
-    ToPrimitive,
-    Serialize,
-    Deserialize,
-    Eq,
-    Hash,
-    PartialOrd,
-    Ord,
-)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(
     feature = "ocaml_types",
     derive(ocaml::IntoValue, ocaml::FromValue, ocaml_gen::Enum)
@@ -374,23 +358,6 @@ pub struct CircuitGate<F: FftField> {
     /// public selector polynomials that can used as handy coefficients in gates
     #[serde_as(as = "Vec<o1_utils::serialization::SerdeAs>")]
     pub coeffs: Vec<F>,
-}
-
-impl<F: FftField> ToBytes for CircuitGate<F> {
-    #[inline]
-    fn write<W: Write>(&self, mut w: W) -> IoResult<()> {
-        let typ: u8 = ToPrimitive::to_u8(&self.typ).unwrap();
-        typ.write(&mut w)?;
-        for i in 0..COLUMNS {
-            self.wires[i].write(&mut w)?
-        }
-
-        (self.coeffs.len() as u8).write(&mut w)?;
-        for x in self.coeffs.iter() {
-            x.write(&mut w)?;
-        }
-        Ok(())
-    }
 }
 
 impl<F: FftField> CircuitGate<F> {

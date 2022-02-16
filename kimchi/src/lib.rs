@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate num_derive;
-
 pub mod alphas;
 pub mod bench;
 pub mod circuits;

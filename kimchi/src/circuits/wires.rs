@@ -1,9 +1,7 @@
 //! This module implements Plonk circuit gate wires primitive.
 
-use ark_ff::bytes::{FromBytes, ToBytes};
 use array_init::array_init;
 use serde::{Deserialize, Serialize};
-use std::io::{Read, Result as IoResult, Write};
 
 /// Number of registers
 pub const COLUMNS: usize = 15;
@@ -37,24 +35,6 @@ impl Wire {
 /// represents the same cell (row and column) or a different cell in another row.
 /// (This is to help the permutation argument.)
 pub type GateWires = [Wire; PERMUTS];
-
-impl ToBytes for Wire {
-    #[inline]
-    fn write<W: Write>(&self, mut w: W) -> IoResult<()> {
-        (self.row as u32).write(&mut w)?;
-        (self.col as u32).write(&mut w)?;
-        Ok(())
-    }
-}
-
-impl FromBytes for Wire {
-    #[inline]
-    fn read<R: Read>(mut r: R) -> IoResult<Self> {
-        let row = u32::read(&mut r)? as usize;
-        let col = u32::read(&mut r)? as usize;
-        Ok(Wire { row, col })
-    }
-}
 
 #[cfg(feature = "ocaml_types")]
 pub mod caml {
